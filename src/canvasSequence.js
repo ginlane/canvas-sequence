@@ -3,7 +3,7 @@ class CanvasSequence {
     /**
      * @see ctor
      */
-    constructor(canvasOrOpts, sequencePath, sequenceStart, sequenceEnd, fileType, loadCallback, onDraw, autoPlay = false, fps = 24) {
+    constructor(canvasOrOpts, sequencePath, sequenceStart, sequenceEnd, fileType, loadCallback, onDraw, autoPlay = false, fps = 24, playOnce = false) {
         if (typeof canvasOrOpts === 'object') {
             // first param is an object of options
             return this.ctor(canvasOrOpts);
@@ -18,7 +18,8 @@ class CanvasSequence {
             loadCallback,
             onDraw,
             autoPlay,
-            fps
+            fps,
+            playOnce
         });
     }
     /**
@@ -31,8 +32,9 @@ class CanvasSequence {
      * @param opts.onDraw {function(previousFrame:Int, currentFrame:Int)`} - a callback to be notified when the drawn frame changes
      * @param opts.autoPlay {Boolean} - Defaults to `false`. a flag to make the sequence play without binding to scroll (like a regular video)
      * @param opts.fps {Number} - Defaults to `24`. Frames per second to use for video-like playback
+     * @param opts.playOnce {Boolean} - Defaults to `false`. a flag to make the sequence play only once
      */
-    ctor({ canvas, sequencePath, sequenceStart, sequenceEnd, fileType, loadCallback, onDraw, autoPlay = false, fps = 24 }) {
+    ctor({ canvas, sequencePath, sequenceStart, sequenceEnd, fileType, loadCallback, onDraw, autoPlay = false, fps = 24, playOnce = false }) {
         this.sequence = [];
 
         this.canvas = document.getElementById(canvas);
@@ -58,7 +60,9 @@ class CanvasSequence {
         this.onDraw = typeof onDraw === 'function' ? onDraw : null;
         this.autoPlay = autoPlay;
         this.isPaused = false;
+        this.firstLoopEnd = false;
         this.fps = fps;
+        this.playOnce = playOnce;
 
         this.loadSequence();
     }
@@ -76,6 +80,7 @@ class CanvasSequence {
         const now = +new Date();
         this.startTime = now - (this.currentFrame / this.fps * 1000)
         this.isPaused = false;
+        this.firstLoopEnd = false;
     }
 
     addLeadingZeros(n) {
@@ -174,8 +179,10 @@ class CanvasSequence {
     }
 
     renderFrame() {
-
         this.syncPlayPosition();
+        if ( this.playOnce && this.firstLoopEnd ) {
+            this.pause();
+        }
 
         requestAnimationFrame(() => {
             this.renderFrame();
@@ -187,6 +194,10 @@ class CanvasSequence {
         if ((this.currentFrame != this.previousFrame) || this.firstLoad) {
             this.drawImage(this.currentFrame);
             this.onDraw && this.onDraw.call(null, this.previousFrame, this.currentFrame);
+        }
+
+        if ( this.getNextFrameNumber() === this.sequenceEnd - 1 ) {
+            this.firstLoopEnd = true;
         }
 
         this.firstLoad = false;
