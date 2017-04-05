@@ -79,6 +79,7 @@ class CanvasSequence {
 
         this.fileType = fileType || '.png';
 
+        this.progress = 0;
         this.scrollHeight = document.body.scrollHeight;
         this.loadCallback = loadCallback || function() {};
         this.onDraw = typeof onDraw === 'function' ? onDraw : null;
@@ -145,7 +146,13 @@ class CanvasSequence {
     }
 
     getNextFrameNumber() {
-        return Math.round(this.progress * this.sequenceLength);
+      return Math.min(
+        this.sequenceLength,
+        Math.max(
+          0,
+          Math.round(this.progress * this.sequenceLength)
+        )
+      );
     }
 
     syncScrollPosition() {
