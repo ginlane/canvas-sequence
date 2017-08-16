@@ -196,6 +196,9 @@ class CanvasSequence {
 
     setProgress(progress) {
         this.progress = progress;
+        if (this.mode === CanvasSequence.PlayMode.MANUAL) {
+            requestAnimationFrame(this.renderFrame.bind(this));
+        }
     }
 
     drawImage(frame) {
@@ -215,9 +218,9 @@ class CanvasSequence {
             this.pause();
         }
 
-        requestAnimationFrame(() => {
-            this.renderFrame();
-        });
+        if (this.mode !== CanvasSequence.PlayMode.MANUAL) {
+            requestAnimationFrame(this.renderFrame.bind(this));
+        }
 
         this.previousFrame = this.currentFrame;
         this.currentFrame = this.getNextFrameNumber();
