@@ -1,3 +1,13 @@
+# 1.3.6
+
+* Skip RAF calls For MANUAL play mode
+
+# 1.3.5
+
+* Cross browser scrolltop support
+
+# 1.3.4 (skipped)
+
 # 1.3.3
 
 * Fix: canvas should not be blank on first render (#6)
